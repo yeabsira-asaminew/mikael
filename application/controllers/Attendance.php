@@ -114,11 +114,11 @@ class Attendance extends CI_Controller
             $this->output->set_content_type('application/json')->set_output(json_encode($response));
             return;
         }
-        /*
+        
         $attendance_recorded = false;
         $status = 'present';
         $message = '✅ የተማሪው አቴንዳንስ በተሳካ ሁኔታ ተመዝግቧል!';
-*/
+
         foreach ($schedules as $schedule) {
             $schedule_time = strtotime($schedule->time);
             $start_time = $schedule_time - 300; // 5 minutes before
@@ -247,69 +247,13 @@ class Attendance extends CI_Controller
             'status' => $absent_recorded > 0 ? 'success' : 'error',
             'message' => $absent_recorded > 0
                 ? "✅ ለ {$absent_recorded} ተማሪዎች ቀሪ ተብሎ ተመዝግቧል!"
-                : "ℹ️ ምንም ተማሪዎች ለመሰየም አልተገኙም!"
+                : "የሁሉም ተማሪዎች አቴንዳንስ ተመዝግቧል ወይም ምንም ተማሪዎች ቋት ውስጥ አልተገኙም!"
         ];
 
         $this->output->set_content_type('application/json')->set_output(json_encode($response));
     }
 
 
-    /*
-    public function record_absent_for_all()
-    {
-        $current_day = date('l'); // Get current day (e.g., "Sunday")
-        $current_date = date('Y-m-d'); // Get current date
-        $current_time = strtotime(date('H:i:s'));
-
-        // Get all sections with schedules for the current day
-        $sections_with_schedules = $this->Attendance_model->get_sections_with_schedules_for_day($current_day);
-
-        if (!empty($sections_with_schedules)) {
-            foreach ($sections_with_schedules as $section) {
-                $section_id = $section->section_id;
-
-                $schedule_time = strtotime($section->time);
-                $end_recording_time = $schedule_time + 3600; // 1 hour after
-                $end_absent_time = $schedule_time + 4800;
-                // Check if the current time is within the absent attendance window
-                if ($current_time > $end_recording_time && $current_time <= $end_absent_time) {
-                    // Get all students in the section who haven't recorded attendance today
-                    $absent_students = $this->Attendance_model->get_absent_students($section_id, $current_date);
-
-                    if (!empty($absent_students)) {
-                        foreach ($absent_students as $student) {
-                            // Record attendance as absent for each student
-                            $this->Attendance_model->record_attendance($student->id, 'absent', $current_date);
-                        }
-                        $response = [
-                            'status' => 'success',
-                            'message' => "✅ ያልመጡ ተማሪዎች አቴንዳንስ 'ቀሪ' ሆኖ ተመዝግቧል!"
-                        ];
-                    } else {
-                        $response = [
-                            'status' => 'error',
-                            'message' => "⚠️ የሁሉም ተማሪዎች አቴንዳንስ ቀድሞ ተመዝግቧል!"
-                        ];
-                    }
-                } else {
-                    $response = [
-                        'status' => 'error',
-                        'message' => "⚠️ የመርሐግብሩ አቴንዳንስ መመዝገቢያ ጊዜ ገደብ ተጠናቋል አልያም ለመጠናቀቅ ጥቂት ይቀረዋል!"
-                    ];
-                }
-            }
-        } else {
-            $response = [
-                'status' => 'error',
-                'message' => '⚠️ ዛሬ ምንም የትምህርት መርሐግብር የለም ወይም የመርሐግብሩ ጊዜ አልፏል!'
-            ];
-        }
-
-        // Load the view with the response
-        $data['response'] = $response;
-        $this->load->view('admin/scan_qr', $data);
-    }
-*/
     public function list()
     {
         // Get the Ethiopian date from the input
