@@ -19,6 +19,7 @@ class Attendance extends CI_Controller
 
         $this->load->model('Attendance_model');
         $this->load->model('Student_model');
+        $this->load->model('Category_model');
     }
 
     public function scanner()
@@ -67,12 +68,12 @@ class Attendance extends CI_Controller
         $current_time = time();
         $current_day = date('l');
 
-        // Check if attendance already recorded today within the last hour
+        // Check if attendance already recorded today within the last hour and 5 minutes
         if ($student->last_attendance_date == $current_date) {
             $last_attendance_time = strtotime($student->last_attendance_time);
             $time_diff = ($current_time - $last_attendance_time) / 60;
 
-            if ($time_diff < 60) {
+            if ($time_diff < 65) {
                 $response = [
                     'status' => 'error',
                     'student_id' => $student_id,
@@ -114,7 +115,7 @@ class Attendance extends CI_Controller
             $this->output->set_content_type('application/json')->set_output(json_encode($response));
             return;
         }
-        
+
         $attendance_recorded = false;
         $status = 'present';
         $message = '✅ የተማሪው አቴንዳንስ በተሳካ ሁኔታ ተመዝግቧል!';
@@ -253,72 +254,11 @@ class Attendance extends CI_Controller
         $this->output->set_content_type('application/json')->set_output(json_encode($response));
     }
 
-
     public function list()
     {
-        // Get the Ethiopian date from the input
-        $selectedDate = $this->input->get('date');
-
-        // If no date is provided, use the current Ethiopian date
-        if (empty($selectedDate)) {
-            $gregorianDate = new DateTime();
-            $ethiopianDate = \Andegna\DateTimeFactory::fromDateTime($gregorianDate);
-            $selectedDate = $ethiopianDate->format('d/m/Y');
+        if ($this->session->userdata('role') !== 'superadmin') {
+            redirect('login');
         }
-
-        try {
-            // Validate and convert the Ethiopian date
-            $selectedDateParts = explode('/', $selectedDate);
-            if (count($selectedDateParts) !== 3) {
-                throw new \Andegna\Exception\InvalidDateException("Invalid date format");
-            }
-
-            $ethiopianDate = \Andegna\DateTimeFactory::of(
-                (int)$selectedDateParts[2], // Year
-                (int)$selectedDateParts[1], // Month
-                (int)$selectedDateParts[0]  // Day
-            );
-
-            // Convert to Gregorian date (YYYY-MM-DD format)
-            $gregorianDate = $ethiopianDate->toGregorian()->format('Y-m-d');
-        } catch (\Exception $e) {
-            $this->session->set_flashdata('attendance_message', [
-                'type' => 'error',
-                'text' => 'ያስገቡት ቀን ልክ አይደለም። እባክዎ ያስተካክሉ!'
-            ]);
-            redirect('attendance/list');
-            return;
-        }
-
-        // Fetch attendances for the selected date
-        $data['attendances'] = $this->Attendance_model->get_attendances($gregorianDate);
-
-        // Process dates for display
-        foreach ($data['attendances'] as &$attendance) {
-            if (!empty($attendance['created_at'])) {
-                // Convert created_at to Ethiopian date and time
-                $gregorianDateTime = new DateTime($attendance['created_at']);
-                $ethiopianDateTime = \Andegna\DateTimeFactory::fromDateTime($gregorianDateTime);
-
-                // Format date
-                $attendance['ethiopian_date'] = $ethiopianDateTime->format('F d፣ Y ዓ.ም');
-
-                // Format time (Ethiopian time is UTC+3)
-                $time = $gregorianDateTime->format('h:i A');
-                $time = str_replace(['AM', 'PM'], ['ቀን', 'ማታ'], $time);
-                $attendance['ethiopian_time'] = $time;
-            } else {
-                $attendance['ethiopian_date'] = 'ዕለቱ አልተመዘገበም';
-                $attendance['ethiopian_time'] = '';
-            }
-        }
-
-        $data['selected_date'] = $selectedDate;
-        $this->load->view('admin/list-attendance', $data);
-    }
-    /* 
-    public function list()
-    {
         // Get the Ethiopian date from the input
         $selectedDate = $this->input->get('date');
 
@@ -338,7 +278,7 @@ class Attendance extends CI_Controller
             // Split the Ethiopian date into day, month, and year
             $selectedDateParts = explode('/', $selectedDate);
             if (count($selectedDateParts) !== 3) {
-                throw new \Andegna\Exception\InvalidDateException("Invalid date format");
+                throw new \Andegna\Exception\InvalidDateException("ያስገቡት የቀን ፎርማት ልክ አይደለም። እባክዎ ያስተካክሉ!");
             }
 
             // Create an Ethiopian date object using DateTimeFactory
@@ -363,7 +303,6 @@ class Attendance extends CI_Controller
         // Fetch attendances for the selected Gregorian date
         $data['attendances'] = $this->Attendance_model->get_attendances($gregorianDate);
 
-
         // Convert Gregorian dates in the attendance data to Ethiopian for display
         foreach ($data['attendances'] as &$attendance) {
             if (!empty($attendance['created_date'])) {
@@ -378,12 +317,12 @@ class Attendance extends CI_Controller
                 // Replace AM with ቀን and PM with ማታ
                 $time = str_replace(['AM', 'PM'], ['ቀን', 'ማታ'], $time);
                 $attendance['ethiopian_time'] = $time;
-                
-                //$gregorianTime = new DateTime($attendance['created_at']);
-                //$ethiopianTime = \Andegna\DateTimeFactory::fromDateTime($gregorianTime);
-                //$time = $ethiopianTime->format('h:i A');
-               // $attendance['ethiopian_time'] = $time;
-                
+                /*
+                $gregorianTime = new DateTime($attendance['created_at']);
+                $ethiopianTime = \Andegna\DateTimeFactory::fromDateTime($gregorianTime);
+                $time = $ethiopianTime->format('h:i A');
+                $attendance['ethiopian_time'] = $time;
+                */
             } else {
                 $attendance['ethiopian_date'] = 'ዕለቱ አልተመዘገበም'; // "Date not recorded"
             }
@@ -393,66 +332,109 @@ class Attendance extends CI_Controller
         $data['selected_date'] = $selectedDate;
         $this->load->view('admin/list-attendance', $data);
     }
-*/
-    public function update_attendance()
-    {
-        if (!$this->input->is_ajax_request()) {
-            show_404();
-        }
 
-        $id = $this->input->post('id');
-        $current_status = $this->input->post('current_status');
 
-        // Validate inputs
-        if (empty($id) || !in_array($current_status, ['present', 'absent'])) {
-            echo json_encode(['success' => false, 'message' => 'Invalid request']);
-            return;
-        }
-
-        // Toggle status
-        $new_status = ($current_status == 'present') ? 'absent' : 'present';
-
-        // Update in database
-        $updated = $this->Attendance_model->update_attendance_status($id, $new_status);
-
-        if ($updated) {
-            // Prepare button HTML based on new status
-            $button_html = $this->load->view('attendance/_attendance_button', [
-                'id' => $id,
-                'status' => $new_status
-            ], true);
-
-            echo json_encode([
-                'success' => true,
-                'new_status' => $new_status,
-                'button_html' => $button_html,
-                'status_text' => ($new_status == 'present') ? 'ተገኝቷል' : 'ቀሪ'
+     // Update attendance status
+    public function update_status() {
+        $attendance_id = $this->input->post('attendance_id');
+        $new_status = $this->input->post('new_status');
+        
+        if ($this->Attendance_model->update_attendance($attendance_id, $new_status)) {
+            $this->session->set_flashdata('attendance_message', [
+                'type' => 'success',
+                'text' => 'አቴንዳንሱ በተሳካ ሁኔታ ተቀይሯል!'
             ]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Update failed']);
+            $this->session->set_flashdata('attendance_message', [
+                'type' => 'error',
+                'text' => 'እንደገና ይሞክሩ!'
+            ]);
         }
+        
+        redirect('attendance/list');
     }
-    /* // delete attendace 
-    public function delete_attendance($id)
+
+    // Delete attendance record
+    public function delete($id) {
+        if ($this->Attendance_model->delete_attendance($id)) {
+            $this->session->set_flashdata('attendance_message', [
+                'type' => 'success',
+                'text' => 'አቴንዳንሱ በተሳካ ሁኔታ ተሰርዟል!'
+            ]);
+        } else {
+            $this->session->set_flashdata('attendance_message', [
+                'type' => 'error',
+                'text' => 'እንደገና ይሞክሩ!'
+            ]);
+        }
+        
+        redirect('attendance/list');
+    }
+
+    public function list_and_record()
     {
-        $attendance = $this->Attendance_model->getAttend($id);
-
-        if (empty($attendance)) {
-            $this->session->set_flashdata('attendDel_error', 'Something went wrong, attendance cannot be found!');
-            redirect('hr/Attendance/list');
-            return;
+        if ($this->session->userdata('role') !== 'superadmin') {
+            redirect('login');
         }
-        $this->leave->record_leave([
-            'emp_id' => $attendance['emp_id'],
-            'leave_type' => "Emergency",
-            'start_date' => date('Y-m-d', strtotime($attendance['date'])),
-            'end_date' => date('Y-m-d', strtotime($attendance['date'])),
-        ]);
+        // Get filter parameters
+        $filters = [
+            'age_category_id' => $this->input->get('age_category_id'),
+            'curriculum_id' => $this->input->get('curriculum_id'),
+            'department_id' => $this->input->get('department_id'),
+            'choir_id' => $this->input->get('choir_id')
+        ];
 
-        $this->Attendance_model->delete_single_attendance($id);
+        // Get data for view
+        $data['categories'] = [
+            'age' => $this->Category_model->get_subcategories(1),
+            'curriculum' => $this->Category_model->get_subcategories(2),
+            'department' => $this->Category_model->get_subcategories(3),
+            'choir' => $this->Category_model->get_subcategories(4)
+        ];
 
-        $this->session->set_flashdata('attendDel_success', 'Attendance is deleted successfully!');
-        redirect('hr/Attendance/list');
+        $data['students'] = $this->Student_model->get_students_by_filters($filters);
+        $data['current_filters'] = $filters;
+
+        $this->load->view('admin/list-and-record-attendance', $data);
     }
-        */
+
+    public function mark_attendance()
+    {
+        $student_id = $this->input->post('student_id');
+        $status = $this->input->post('status');
+        $date = $this->input->post('date');
+        $time = $this->input->post('time');
+
+        $gregorianTime = date('H:i:s', strtotime($time) + 6 * 3600); 
+        try {
+            // Convert Ethiopian date to Gregorian
+            $selectedDateParts = explode('/', $date);
+            if (count($selectedDateParts) !== 3) {
+                throw new Exception("ያስገቡት ቀን ልክ አይደለም");
+            }
+
+            $ethiopianDate = \Andegna\DateTimeFactory::of(
+                (int)$selectedDateParts[2], // Year
+                (int)$selectedDateParts[1], // Month
+                (int)$selectedDateParts[0]  // Day
+            );
+
+            $gregorianDate = $ethiopianDate->toGregorian()->format('Y-m-d');
+
+            // Record attendance
+            $this->Attendance_model->record_attendance($student_id, $status, $gregorianDate, $gregorianTime);
+
+            $this->session->set_flashdata('attendance_message', [
+                'type' => 'success',
+                'text' => 'አቴንዳንሱ በተሳካ ሁኔታ ተመዝግቧል!'
+            ]);
+        } catch (\Exception $e) {
+            $this->session->set_flashdata('attendance_message', [
+                'type' => 'error',
+                'text' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+
+        redirect($this->input->post('redirect_url'));
+    }
 }

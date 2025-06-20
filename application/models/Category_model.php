@@ -7,6 +7,14 @@ class Category_model extends CI_Model {
         parent::__construct();
     }
 
+    public function get_subcategories($category_id) {
+        $this->db->select('*');
+        $this->db->from('sub_category');
+        $this->db->where('category_id', $category_id);
+        $this->db->order_by('id', 'ASC');
+        return $this->db->get()->result();
+    }
+
     public function get_apostolic_categories() {
         return $this->db->get('apostolic_category')->result();
     }

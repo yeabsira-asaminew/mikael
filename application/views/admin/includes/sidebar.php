@@ -25,7 +25,7 @@
 
         <!-- Students List (Active for list, add, edit) -->
         <li
-            class="<?= ($current_controller == 'student' && in_array($current_method, ['list', 'add_student', 'add', 'view', 'edit', 'update'])) ? 'active' : ''; ?>">
+            class="<?= ($current_controller == 'student' && in_array($current_method, ['list', 'add_student', 'add', 'add_personal_info', 'save_personal_info', 'add_academic_info', 'save_academic_info', 'view', 'edit', 'update'])) ? 'active' : ''; ?>">
             <a href="<?php echo base_url('student/list'); ?>">
                 <i class='bx bxs-user-detail'></i>
                 <span class="text">ተማሪዎች</span>
@@ -39,16 +39,12 @@
                 <span class="text">መርሐግብሮች</span>
             </a>
         </li>
-  
-    </ul>
 
-    <ul class="side-menu">
-
-        <!-- only superadmins has the previlege -->
+         <!-- only superadmins has the previlege -->
         <?php if ($this->session->userdata('role') == 'superadmin'): ?>
         <!-- Attendances  -->
         <li
-            class="<?= ($current_controller == 'attendance' && in_array($current_method, ['list'])) ? 'active' : ''; ?>">
+            class="<?= ($current_controller == 'attendance' && in_array($current_method, ['list', 'list_and_record', 'mark_attendance'])) ? 'active' : ''; ?>">
             <a href="<?php echo base_url('attendance/list'); ?>">
                 <i class='bx bx-list-ul '></i>
                 <span class="text">አቴንዳንስ</span>
@@ -77,6 +73,11 @@
             </a>
         </li>
         <?php endif; ?>
+    </ul>
+
+    <ul class="side-menu">
+
+       
 
         <!-- Scanner -->
         <li class="<?= ($current_controller == 'attendance' && $current_method == 'scanner') ? 'active' : ''; ?>">
@@ -87,32 +88,6 @@
         </li>
 
 
-        <div
-            style="text-align: center; font-family: 'Nyala', 'Abyssinica SIL', sans-serif; font-size: 12px; position: absolute; bottom: 0; width: 100%; padding: 10px; background-color: #222; color: white;">
-            <?php
-
-require 'vendor/autoload.php'; // Make sure to include the Composer autoload file
-
-use Andegna\DateTimeFactory;
-use Andegna\DateTime as EthiopianDateTime;
-
-// Get the current Gregorian date
-$gregorianDate = new DateTime();
-
-// Convert the Gregorian date to Ethiopian date
-$ethiopianDate = new EthiopianDateTime($gregorianDate);
-
-// Format the Ethiopian date to display the current Ethiopian year
-$ethiopianYear = $ethiopianDate->format('Y ዓ.ም');
-
-// Display the copyright notice with HTML styling
-echo "<div style='text-align: center; font-family: 'Nyala', 'Abyssinica SIL', sans-serif;'>";
-echo "<p style='font-size: 12px;'>© $ethiopianYear</p>";
-echo "<p>ሰንበት አቴንዳንስ ሲስተም(SAS)</p>";
-echo "</div>";
-
-?>
-        </div>
     </ul>
 
 

@@ -14,29 +14,36 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/icon.css'); ?>">
     <link rel="stylesheet" type="text/css"
         href="<?php echo base_url('assets/icon/simple-line-icons/css/simple-line-icons.css') ?>">
-<style>
-    .btn-success {
-    background-color: #28a745;
-    color: white;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-}
-
-.update-attendance {
-    transition: all 0.3s ease;
-    padding: 5px 10px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-}
-
-.update-attendance:hover {
-    opacity: 0.8;
-}
-</style>
+    <style>
+        .status-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .present {
+            background-color: #28a745;
+            color: white;
+        }
+        .absent {
+            background-color: #dc3545;
+            color: white;
+        }
+        .delete-btn {
+            background-color: #6c757d;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .delete-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
 </head>
 
 <body>
@@ -60,10 +67,10 @@
                 </div>
 
                 <!-- error and success message-->
-                <?php if ($this->session->flashdata('auth_message')): ?>
+                <?php if ($this->session->flashdata('attendance_message')): ?>
                     <div id="flash-message"
-                        class="message-box <?php echo $this->session->flashdata('auth_message')['type']; ?>">
-                        <?php echo $this->session->flashdata('auth_message')['text']; ?>
+                        class="message-box <?php echo $this->session->flashdata('attendance_message')['type']; ?>">
+                        <?php echo $this->session->flashdata('attendance_message')['text']; ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -72,11 +79,18 @@
                 <div class="order">
 
 
+
                     <form class="list-search-form" action="<?= base_url('attendance/list') ?>" method="get">
-                        <label for="date">ቀን አስገባ(ቀቀ/ወወ/አአአአ)</label>
+                        <label for="date">ቀን አስገባ (ቀቀ/ወወ/አአአአ)</label>
                         <input type="text" name="date" id="date" value="<?php echo date('d/m/Y', strtotime($selected_date)); ?>">
                         <button type="submit">ፈልግ</button>
+
+                        <a href="<?= base_url('attendance/list_and_record') ?>" class="custom-add-btn">
+                            <i class="bx bx-plus"></i> ያለፈ አቴንዳንስ ያክሉ
+                        </a>
                     </form>
+
+
 
                     <table class="table-container-table">
                         <thead>
@@ -98,7 +112,7 @@
                             <?php if (!empty($attendances)): ?>
                                 <?php foreach ($attendances as $attendance): ?>
                                     <tr>
-                                        <td><?= $attendance['id'] ?></td>
+                                        <td><?= $attendance['student_id'] ?></td>
                                         <td><?= $attendance['fname']  . ' ' . $attendance['mname'] . ' ' . $attendance['lname'] ?>
                                         </td>
                                         <td><?php echo !empty($attendance['age_category_name']) ? $attendance['age_category_name'] : '-'; ?></td>
@@ -109,16 +123,28 @@
                                         <td><?= $attendance['ethiopian_time'] ?></td>
                                         <td><?= $attendance['status_text'] ?></td>
                                         <td>
-                                            <?php $this->load->view('attendance/_attendance_button', [
-                                                'id' => $attendance['id'],
-                                                'status' => $attendance['status']
-                                            ]); ?>
-                                            |
-                                            <a href="<?= base_url('attendance/delete_attendance/' . $attendance['id']) ?>"
-                                                class="btn btn-danger confirm-delete"
-                                                onclick="return confirm('እርግጠኛ ነዎት ይህን አቴንዳንስ መቀየር ይፈልጋሉ?');">
-                                                <i class='bx bx-trash'> ሰርዝ</i> <!-- Updated icon for delete -->
-                                            </a>
+
+
+                                            <form action="<?= base_url('attendance/update_status') ?>" method="post" style="display: inline;">
+                                                <input type="hidden" name="attendance_id" value="<?=  $attendance['attendance_id'] ?>">
+                                                <input type="hidden" name="new_status" value="<?= $attendance['attendance_status'] == 'present' ? 'absent' : 'present' ?>">
+                                                <button type="submit"  onclick="return confirm('እርግጠኛ ነዎት ይህን አቴንዳንስ ለመቀየር ይፈልጋሉ?')" class="status-btn <?= $attendance['attendance_status'] == 'present' ? 'absent' : 'present' ?>">
+                                                     <?= $attendance['attendance_status'] == 'present' ? 'ቀሪ ' : 'ተገኝቷል ' ?> 
+                                                </button>
+                                            </form>
+
+                                            <!-- For delete --> 
+                                            <form action="<?= base_url('attendance/delete/' . $attendance['attendance_id']) ?>" method="post" style="display: inline;">
+                                                <button type="submit"
+                                                    style="background-color: #6c757d; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; transition: all 0.3s;"
+                                                    onmouseover="this.style.backgroundColor='#5a6268'"
+                                                    onmouseout="this.style.backgroundColor='#6c757d'"
+                                                    onclick="return confirm('ይህን አቴንዳንስ ለመሰረዝ እርግጠኛ ነዎት?')">
+                                                    ሰርዝ
+                                                </button>
+                                            </form>
+
+
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -140,39 +166,6 @@
     </section>
     <!-- CONTENT -->
 </body>
-<script>
-$(document).ready(function() {
-    $(document).on('click', '.update-attendance', function() {
-        var button = $(this);
-        var id = button.data('id');
-        var currentStatus = button.data('current-status');
-        
-        $.ajax({
-            url: '<?= base_url('attendance/update_attendance') ?>',
-            method: 'POST',
-            dataType: 'json',
-            data: {
-                id: id,
-                current_status: currentStatus
-            },
-            success: function(response) {
-                if (response.success) {
-                    // Replace button with new one
-                    button.replaceWith(response.button_html);
-                    
-                    // You can also update status text elsewhere if needed
-                    // $('#status-text-'+id).text(response.status_text);
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function() {
-                alert('Error updating attendance');
-            }
-        });
-    });
-});
-</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         function formatEthiopianDateInput(input) {

@@ -93,14 +93,14 @@ class Student_model extends CI_Model
         return [];
     }
 
-   
+
     // updates/ insertes qr code the generated for the student
     public function update_qr_code($student_id, $qr_code)
     {
         $this->db->where('id', $student_id);
         return $this->db->update('student', ['qr_code' => $qr_code]);
     }
-   
+
     public function update_student($id, $data)
     {
         $this->db->where('id', $id);
@@ -288,7 +288,7 @@ class Student_model extends CI_Model
     ', false); // The `false` parameter prevents CodeIgniter from escaping the CASE statements
 
         $this->db->from('student');
-         $this->db->join('apostolic_category', 'apostolic_category.id = student.apostolic_id', 'left');
+        $this->db->join('apostolic_category', 'apostolic_category.id = student.apostolic_id', 'left');
         $this->db->join('sub_category AS age_category', 'age_category.id = student.age_category_id', 'left');
         $this->db->join('sub_category AS curriculum', 'curriculum.id = student.curriculum_id', 'left');
         $this->db->join('sub_category AS department', 'department.id = student.department_id', 'left');
@@ -405,5 +405,40 @@ class Student_model extends CI_Model
         $this->db->where('student_id', $id);
         return $this->db->delete('student');
     }
-   
+
+    //attendance record by listing students
+    public function get_students_by_filters($filters = [])
+    {
+        $this->db->select('
+            student.*,
+             age_category.name AS age_category_name,
+        curriculum.name AS curriculum_name,
+        department.name AS department_name,
+        choir.name AS choir_name,
+        ');
+        $this->db->from('student');
+
+        // Join with subcategory tables
+        $this->db->join('sub_category AS age_category', 'age_category.id = student.age_category_id', 'left');
+        $this->db->join('sub_category AS curriculum', 'curriculum.id = student.curriculum_id', 'left');
+        $this->db->join('sub_category AS department', 'department.id = student.department_id', 'left');
+        $this->db->join('sub_category AS choir', 'choir.id = student.choir_id', 'left');
+
+        // Apply filters
+        if (!empty($filters['age_category_id'])) {
+            $this->db->where('student.age_category_id', $filters['age_category_id']);
+        }
+        if (!empty($filters['curriculum_id'])) {
+            $this->db->where('student.curriculum_id', $filters['curriculum_id']);
+        }
+        if (!empty($filters['department_id'])) {
+            $this->db->where('student.department_id', $filters['department_id']);
+        }
+        if (!empty($filters['choir_id'])) {
+            $this->db->where('student.choir_id', $filters['choir_id']);
+        }
+
+        $this->db->order_by('student.student_id', 'ASC');
+        return $this->db->get()->result();
+    }
 }

@@ -189,67 +189,15 @@ class Attendance_model extends CI_Model
         $query = $this->db->get('attendance');
         return $query->row_array();
     }
-    /*
-    // Get schedule-based attendance
-    public function get_schedule_attendance($student_id)
-    {
-        // Day translations
-        $dayTranslations = [
-            "Monday"    => "ሰኞ",
-            "Tuesday"   => "ማክሰኞ",
-            "Wednesday" => "ረቡዕ",
-            "Thursday"  => "ሐሙስ",
-            "Friday"    => "አርብ",
-            "Saturday"  => "ቅዳሜ",
-            "Sunday"    => "እሁድ"
-        ];
 
-        // Fetch section_id for the student
-        $this->db->select('section_id');
-        $this->db->where('id', $student_id);
-        $student = $this->db->get('student')->row_array();
-
-        if (!$student) return [];
-
-        // Fetch schedule days for the section
-        $this->db->select('schedule.day');
-        $this->db->from('schedule');
-        $this->db->join('section_schedule', 'section_schedule.schedule_id = schedule.id');
-        $this->db->where('section_schedule.section_id', $student['section_id']);
-        $query = $this->db->get();
-        $schedules = $query->result_array();
-
-        // Map attendance to schedule days
-        $attendanceData = [];
-        foreach ($schedules as $schedule) {
-            $day = $schedule['day'];
-
-            // Get attendance records for this day
-            $this->db->select("SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) as present, 
-                               SUM(CASE WHEN status = 'Absent' THEN 1 ELSE 0 END) as absent");
-            $this->db->where('student_id', $student_id);
-            $this->db->where("DAYNAME(created_date)", $day);
-            $dayQuery = $this->db->get('attendance')->row_array();
-
-            // Translate day to Amharic
-            $translatedDay = $dayTranslations[$day] ?? $day;
-
-            // Store translated attendance data
-            $attendanceData[$translatedDay] = [
-                'present' => $dayQuery['present'] ?? 0,
-                'absent' => $dayQuery['absent'] ?? 0
-            ];
-        }
-
-        return $attendanceData;
-    }
-*/
 
     public function get_attendances($date)
     {
         $this->db->select('
         a.*, 
-        student.*, 
+        student.*,
+        a.id AS attendance_id, 
+        a.status AS attendance_status,
         age_category.name AS age_category_name,
         curriculum.name AS curriculum_name,
         department.name AS department_name,
@@ -261,64 +209,35 @@ class Attendance_model extends CI_Model
         a.created_date as attendance_date
     ', false);
         $this->db->from('attendance a');
-        $this->db->join('student', 'a.student_id = student.id');
-        $this->db->join('sub_category AS age_category', 'age_category.id = student.age_category_id', 'left');
-        $this->db->join('sub_category AS curriculum', 'curriculum.id = student.curriculum_id', 'left');
-        $this->db->join('sub_category AS department', 'department.id = student.department_id', 'left');
-        $this->db->join('sub_category AS choir', 'choir.id = student.choir_id', 'left');
-        $this->db->where('a.created_date', $date); // Use DATE() function to match date part only
-        $this->db->order_by('a.created_date', 'DESC');
-
-        return $this->db->get()->result_array();
-    }
-    /*
-    // fetching the attendance for listing
-    public function get_attendances($date)
-    {
-        $this->db->select('
-        a.*, student.*, 
-        age_category.name AS age_category_name,
-        curriculum.name AS curriculum_name,
-        department.name AS department_name,
-        choir.name AS choir_name,
-    CASE 
-        WHEN a.status = "present" THEN "ተገኝቷል"
-        WHEN a.status = "absent" THEN "ቀሪ"
-    END AS status_text
-', false);
-        $this->db->from('attendance a');
-        $this->db->join('student', 'a.student_id = student.id');
+        $this->db->join('student', 'a.student_id = student.student_id');
         $this->db->join('sub_category AS age_category', 'age_category.id = student.age_category_id', 'left');
         $this->db->join('sub_category AS curriculum', 'curriculum.id = student.curriculum_id', 'left');
         $this->db->join('sub_category AS department', 'department.id = student.department_id', 'left');
         $this->db->join('sub_category AS choir', 'choir.id = student.choir_id', 'left');
         $this->db->where('a.created_date', $date);
-
-        $query = $this->db->get();
-        return $query->result_array();
+        return $this->db->get()->result_array();
     }
 
-*/
+
+    public function get_by_id($id)
+    {
+        return $this->db->get_where('attendance', ['id' => $id])->row_array();
+    }
+
+    // Update attendance status
+    public function update_attendance($attendance_id, $new_status)
+    {
+        $this->db->where('id', $attendance_id);
+        return $this->db->update('attendance', [
+            'status' => $new_status
+        ]);
+    }
+
+
+    // Delete attendance record
     public function delete_attendance($id)
     {
-        $this->db->delete('attendance', ['id' => $id]);
-    }
-
-    public function update_attendance_status($id, $status)
-    {
-        $this->db->set('status', $status)
-            ->where('id', $id)
-            ->update('attendance');
-
-        return $this->db->affected_rows() > 0;
-    }
-
-    public function get_attendance_status($id)
-    {
-        return $this->db->select('status')
-            ->from('attendance')
-            ->where('id', $id)
-            ->get()
-            ->row()->status;
+        $this->db->where('id', $id);
+        return $this->db->delete('attendance');
     }
 }

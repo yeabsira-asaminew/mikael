@@ -558,7 +558,7 @@ class Student extends CI_Controller
             'education_levels' => $education_levels
         ];
 
-        $this->load->view('admin/edit', $data);
+        $this->load->view('admin/edit-student', $data);
     }
 
 
@@ -871,6 +871,7 @@ class Student extends CI_Controller
         $this->load->view('admin/id-card-modal', $data);
     }
 
+   /*
     // excel
     // Functions for Importing and Exporting Employee Lists 
     // format of employee excel file
@@ -977,7 +978,7 @@ class Student extends CI_Controller
             }
         }
     }
-
+*/
     public function export_students()
     {
         if ($this->session->userdata('role') !== 'superadmin') {

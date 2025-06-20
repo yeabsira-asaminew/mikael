@@ -12,6 +12,15 @@ Creating a self-signed SSL certificate for your XAMPP server will allow you to a
    - Run the following commands to generate a private key and a self-signed certificate:
      ```bash
      openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout server.key -out server.crt
+
+
+or
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 ^
+-keyout E:\Documents\xampp\apache\conf\new\server.key ^
+-out E:\Documents\xampp\apache\conf\new\server.crt ^
+-config E:\Documents\xampp\apache\conf\openssl.cnf
+
      ```
    - Fill in the required details (e.g., Country, State, Organization, etc.).
    - This will create two files: `server.key` (private key) and `server.crt` (certificate).
@@ -119,4 +128,7 @@ By following these steps, you should be able to:
 1. Set up a self-signed SSL certificate for XAMPP.
 2. Access your local web application securely via HTTPS.
 3. Troubleshoot and enable mobile camera access for QR code scanning.
+
+
+
 

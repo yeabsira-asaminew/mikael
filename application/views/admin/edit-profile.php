@@ -13,20 +13,26 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/style.css'); ?>">
 
 
-    <script>
-    function togglePassword() {
-        var passwordInput = document.getElementById("password");
-        var toggleIcon = document.getElementById("togglePassword");
-
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            toggleIcon.classList.replace("bx-hide", "bx-show");
-        } else {
-            passwordInput.type = "password";
-            toggleIcon.classList.replace("bx-show", "bx-hide");
+    <style>
+        .password-wrapper {
+            position: relative;
         }
-    }
-    </script>
+
+        .password-wrapper input {
+            width: 100%;
+            padding-right: 40px;
+            /* space for the icon */
+        }
+
+        .password-wrapper .toggle-eye {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #555;
+        }
+    </style>
 
 <body>
 
@@ -56,10 +62,10 @@
             <div class="unique-form-container">
 
                 <?php if ($this->session->flashdata('auth_message')): ?>
-                <?php $message = $this->session->flashdata('auth_message'); ?>
-                <div class="alert alert-<?= $message['type'] == 'success' ? 'success' : 'danger'; ?>">
-                    <?= $message['text']; ?>
-                </div>
+                    <?php $message = $this->session->flashdata('auth_message'); ?>
+                    <div class="alert alert-<?= $message['type'] == 'success' ? 'success' : 'danger'; ?>">
+                        <?= $message['text']; ?>
+                    </div>
                 <?php endif; ?>
 
 
@@ -78,8 +84,10 @@
 
                         <div class="unique-form-group">
                             <label for="password">አዲስ የይለፍ ቃል</label>
-                            <input type="password" id="password" name="password">
-                            <i class="bx bx-hide" id="togglePassword" onclick="togglePassword()"></i>
+                            <div class="password-wrapper">
+                                <input type="password" id="password" name="password">
+                                <i class="bx bx-hide toggle-eye" id="togglePassword" onclick="togglePassword()"></i>
+                            </div>
                             <?= form_error('password', '<div style="color: red;">', '</div>'); ?>
                         </div>
 
@@ -89,6 +97,19 @@
                             <?= form_error('confirm_password', '<div style="color: red;">', '</div>'); ?>
                         </div>
 
+                        <!--
+                        <div class="unique-form-group">
+                            <label for="password">አዲስ የይለፍ ቃል <i class="bx bx-hide" id="togglePassword" onclick="togglePassword()"></i></label>
+                            <input type="password" id="password" name="password">
+                            <?= form_error('password', '<div style="color: red;">', '</div>'); ?>
+                        </div>
+
+                        <div class="unique-form-group">
+                            <label for="confirm_password">የይለፍ ቃል ያረጋግጡ</label>
+                            <input type="password" id="confirm_password" name="confirm_password">
+                            <?= form_error('confirm_password', '<div style="color: red;">', '</div>'); ?>
+                        </div>
+                -->
                         <div class="unique-form-actions">
                             <button type="submit">አርትዕ</button>
                         </div>
@@ -105,5 +126,16 @@
 </body>
 
 <script src="<?= base_url('assets/js/script.js'); ?>"></script>
+<script>
+    function togglePassword() {
+        const passwordField = document.getElementById("password");
+        const toggleIcon = document.getElementById("togglePassword");
+        const isPassword = passwordField.type === "password";
+
+        passwordField.type = isPassword ? "text" : "password";
+        toggleIcon.classList.toggle("bx-hide", !isPassword);
+        toggleIcon.classList.toggle("bx-show", isPassword);
+    }
+</script>
 
 </html>
