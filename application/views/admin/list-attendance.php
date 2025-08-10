@@ -7,6 +7,14 @@
     <!-- favicon -->
     <link rel="icon" href="<?php echo base_url('assets/images/favicon.ico'); ?>" type="image/x-icon">
     <title>የተማሪዎች አቴንዳንስ ዝርዝር | ሰንበት አቴንዳንስ ሲስተም</title>
+
+    <!-- DataTables CSS & JS -->
+    <!-- DataTables & jQuery -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+
     <!-- Boxicons -->
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
     <!-- My CSS -->
@@ -23,14 +31,17 @@
             font-weight: 500;
             transition: all 0.3s;
         }
+
         .present {
             background-color: #28a745;
             color: white;
         }
+
         .absent {
             background-color: #dc3545;
             color: white;
         }
+
         .delete-btn {
             background-color: #6c757d;
             color: white;
@@ -40,8 +51,36 @@
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .delete-btn:hover {
             background-color: #5a6268;
+        }
+
+        .datatable-search-container {
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .datatable-search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            height: 38px;
+            /* Match your existing button height */
+            width: 200px;
+            box-sizing: border-box;
+        }
+
+        .datatable-search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        /* Hide the default DataTables filter */
+        .dataTables_filter {
+            display: none;
         }
     </style>
 </head>
@@ -79,16 +118,18 @@
                 <div class="order">
 
 
-
-                    <form class="list-search-form" action="<?= base_url('attendance/list') ?>" method="get">
+                    <form class="list-search-form" action="<?= base_url('attendance/list') ?>" method="get" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                         <label for="date">ቀን አስገባ (ቀቀ/ወወ/አአአአ)</label>
                         <input type="text" name="date" id="date" value="<?php echo date('d/m/Y', strtotime($selected_date)); ?>">
                         <button type="submit">ፈልግ</button>
+
+                        <input type="text" id="searchInput" placeholder="ስም፣ መታወቂያ..." style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
 
                         <a href="<?= base_url('attendance/list_and_record') ?>" class="custom-add-btn">
                             <i class="bx bx-plus"></i> ያለፈ አቴንዳንስ ያክሉ
                         </a>
                     </form>
+
 
 
 
@@ -126,14 +167,14 @@
 
 
                                             <form action="<?= base_url('attendance/update_status') ?>" method="post" style="display: inline;">
-                                                <input type="hidden" name="attendance_id" value="<?=  $attendance['attendance_id'] ?>">
+                                                <input type="hidden" name="attendance_id" value="<?= $attendance['attendance_id'] ?>">
                                                 <input type="hidden" name="new_status" value="<?= $attendance['attendance_status'] == 'present' ? 'absent' : 'present' ?>">
-                                                <button type="submit"  onclick="return confirm('እርግጠኛ ነዎት ይህን አቴንዳንስ ለመቀየር ይፈልጋሉ?')" class="status-btn <?= $attendance['attendance_status'] == 'present' ? 'absent' : 'present' ?>">
-                                                     <?= $attendance['attendance_status'] == 'present' ? 'ቀሪ ' : 'ተገኝቷል ' ?> 
+                                                <button type="submit" onclick="return confirm('እርግጠኛ ነዎት ይህን አቴንዳንስ ለመቀየር ይፈልጋሉ?')" class="status-btn <?= $attendance['attendance_status'] == 'present' ? 'absent' : 'present' ?>">
+                                                    <?= $attendance['attendance_status'] == 'present' ? 'ቀሪ ' : 'ተገኝቷል ' ?>
                                                 </button>
                                             </form>
 
-                                            <!-- For delete --> 
+                                            <!-- For delete -->
                                             <form action="<?= base_url('attendance/delete/' . $attendance['attendance_id']) ?>" method="post" style="display: inline;">
                                                 <button type="submit"
                                                     style="background-color: #6c757d; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; transition: all 0.3s;"
@@ -165,6 +206,28 @@
         <!-- MAIN -->
     </section>
     <!-- CONTENT -->
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const table = document.querySelector('.table-container-table');
+            const rows = table.querySelectorAll('tbody tr');
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+
+                rows.forEach(function(row) {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        });
+    </script>
+
+
+
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

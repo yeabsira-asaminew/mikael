@@ -16,7 +16,7 @@ Creating a self-signed SSL certificate for your XAMPP server will allow you to a
 
 or
 
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 ^
+openssl req -x509 -nodes -days 2365 -newkey rsa:2048 ^
 -keyout E:\Documents\xampp\apache\conf\new\server.key ^
 -out E:\Documents\xampp\apache\conf\new\server.crt ^
 -config E:\Documents\xampp\apache\conf\openssl.cnf

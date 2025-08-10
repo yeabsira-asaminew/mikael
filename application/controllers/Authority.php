@@ -178,7 +178,7 @@ class Authority extends CI_Controller
         $password = '$2y$10$BCduCxSUODAN.UopDrLHVeakzyoYJdJ36mbU8uMTYY/H9alEg5Oza';
 
         // Insert into Database
-        $update = $this->Auth_model->update_profile($id, $password);
+        $update = $this->Auth_model->reset_password($id, $password);
 
         if ($update) {
             $this->session->set_flashdata('auth_message', ['type' => 'success', 'text' => 'የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!']);

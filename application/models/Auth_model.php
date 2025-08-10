@@ -20,6 +20,11 @@ class Auth_model extends CI_Model {
         return $this->db->update('auth', $data);
     }
 
+     public function reset_password($user_id, $data) {
+        $this->db->where('id', $user_id);
+        return $this->db->update('auth', ['password' => $data]);
+    }
+
     public function get_authorities() {
         $this->db->select('auth.*');
         $this->db->from('auth');
