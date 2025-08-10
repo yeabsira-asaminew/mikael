@@ -1,21 +1,17 @@
-remove the ; from ;extention=gd php.ini file
+remove  php.ini file
+# find php.ini in the path xampp/php/
+## remove the semicolon from ;extention=gd
 
 
-### Fix 1: Enable the Calendar Extension
-1. Open your **`php.ini`** file (usually found in `xampp/php/`).
-2. Find the following line (you can search for `;extension=calendar`):
-   ```ini
-   ;extension=calendar
-   ```
-3. Remove the semicolon (`;`) to uncomment it:
-   ```ini
-   extension=calendar
-   ```
-4. Restart your XAMPP server (Apache) to apply the changes.
 
----
 
-### Alternative Fix: Implement a Custom JD to Gregorian Converter  
-If enabling the extension is not an option, we can manually convert JD to Gregorian without using `jd_to_gregorian()`.
+# create admins and other superadmins
+## sign in using the credintial 
+     username: superadmin@gmail.com
+     password: 12345678
 
-Let me know if you prefer this second approach!
+
+# read SSL_creation.txt file the access the QR Scanner tool on your mobile or other devices from local server
+
+Thank You!
+Yeabsira Asaminew
