@@ -180,15 +180,18 @@ class Attendance_model extends CI_Model
     }
 
     // Get attendance summary (Total, Present, Absent)
-    public function get_attendance_summary($student_id)
-    {
-        $this->db->select("COUNT(id) as total, 
-                           SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) as present, 
-                           SUM(CASE WHEN status = 'Absent' THEN 1 ELSE 0 END) as absent");
-        $this->db->where('student_id', $student_id);
-        $query = $this->db->get('attendance');
-        return $query->row_array();
-    }
+  
+public function get_attendance_summary($student_id)
+{
+    return $this->db->select("
+            COUNT(id) AS total,
+            SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present,
+            SUM(CASE WHEN status = 'Absent' THEN 1 ELSE 0 END) AS absent
+        ")
+        ->where('student_id', $student_id) // here student_id is the student code
+        ->get('attendance')
+        ->row_array();
+}
 
 
     public function get_attendances($date)

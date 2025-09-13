@@ -27,16 +27,21 @@ class Student extends CI_Controller
     }
     public function add_multiple()
     {
+    
+
         $this->load->view('admin/add_multiple_students');
     }
     // First step - personal information
     public function add_personal_info()
     {
+       
         $this->load->view('admin/add_student_personal');
     }
 
     public function save_personal_info()
     {
+
+        
         // Set validation rules
         $this->form_validation->set_rules('fname', 'First Name', 'required');
         $this->form_validation->set_rules('mname', 'Middle Name', 'required');
@@ -281,9 +286,12 @@ class Student extends CI_Controller
             redirect('student/add_academic_info/' . $student_id);
         }
     }
+
     // this is used in student view page
     public function generate_new_qr($student_id)
     {
+       
+
         $this->generate_qr($student_id);
         redirect('student/view/' . $student_id);
     }
@@ -291,6 +299,7 @@ class Student extends CI_Controller
     // Generate QR code for a student
     private function generate_qr($student_id)
     {
+         
         if ($this->session->userdata('role') !== 'superadmin') {
             redirect('login');
         }
@@ -421,8 +430,12 @@ class Student extends CI_Controller
         }
 
         $data['student'] =  $student;
-        $data['student_id'] = $id;
-        $data['attendance'] = $this->Attendance_model->get_attendance_summary($id);
+        
+        $data['student_id'] = $student['student_id']; // student code
+
+    // Attendance by student_id (code)
+    $data['attendance'] = $this->Attendance_model->get_attendance_summary($student['student_id']);
+
         // $data['schedule'] = $this->Attendance_model->get_schedule_attendance($id);
 
 
@@ -564,6 +577,7 @@ class Student extends CI_Controller
 
     public function update($id)
     {
+
         $student = $this->Student->get_student_by_id($id);
 
         if (!$student) {
@@ -774,6 +788,7 @@ class Student extends CI_Controller
 
     public function deactivate_student($id)
     {
+      
         if ($this->session->userdata('role') !== 'superadmin') {
             redirect('login');
         }
@@ -793,6 +808,7 @@ class Student extends CI_Controller
 
     public function activate_student($id)
     {
+       
         if ($this->session->userdata('role') !== 'superadmin') {
             redirect('login');
         }
@@ -812,6 +828,8 @@ class Student extends CI_Controller
 
     public function delete($id)
     {
+       
+        
         if ($this->session->userdata('role') !== 'superadmin') {
             redirect('login');
         }
@@ -871,7 +889,7 @@ class Student extends CI_Controller
         $this->load->view('admin/id-card-modal', $data);
     }
 
-   /*
+    /*
     // excel
     // Functions for Importing and Exporting Employee Lists 
     // format of employee excel file

@@ -147,7 +147,7 @@
             <div class="students-details-content" id="attendance">
                 <div class="charts-container">
                     <canvas id="barChart"></canvas>
-                    <canvas id="scheduleChart"></canvas>
+                   <!-- <canvas id="scheduleChart"></canvas> -->
                 </div>
             </div>
 
@@ -268,66 +268,37 @@
 </script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const ctx1 = document.getElementById('barChart').getContext('2d');
-        const ctx2 = document.getElementById('scheduleChart').getContext('2d');
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx1 = document.getElementById('barChart').getContext('2d');
 
-        const attendanceData = <?= json_encode($attendance) ?>;
-        const scheduleData = <?= json_encode($schedule) ?>;
+    const attendanceData = <?= json_encode($attendance ?? ['total'=>0,'present'=>0,'absent'=>0]) ?>;
 
-        const labels = Object.keys(scheduleData);
-        const presentData = labels.map(day => scheduleData[day].present);
-        const absentData = labels.map(day => scheduleData[day].absent);
-
-        new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: ['ጠቅላላ', 'የተገኘበት', 'ቀሪ'],
-                datasets: [{
-                    label: 'ጠቅላላ አቴንዳንስ በቁጥር',
-                    data: [attendanceData.total, attendanceData.present, attendanceData.absent],
-                    backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(75, 192, 192, 0.6)',
-                        'rgba(255, 99, 132, 0.6)'
-                    ],
-                    borderColor: ['rgba(54, 162, 235, 1)', 'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)'
-                    ],
-                    borderWidth: 1,
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true
-            }
-        });
-
-        new Chart(ctx2, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                        label: 'የተገኘበት',
-                        data: presentData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1,
-                        borderRadius: 5
-                    },
-                    {
-                        label: 'ቀሪ',
-                        data: absentData,
-                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1,
-                        borderRadius: 5
-                    }
-                ]
-            },
-            options: {
-                responsive: true
-            }
-        });
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['ጠቅላላ', 'የተገኘበት', 'ቀሪ'],
+            datasets: [{
+                label: 'ጠቅላላ አቴንዳንስ በቁጥር',
+                data: [attendanceData.total, attendanceData.present, attendanceData.absent],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 99, 132, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true
+        }
     });
+});
 </script>
 
 </html>

@@ -25,9 +25,9 @@ date_default_timezone_set('Africa/Addis_Ababa');
 |
 */
 // $config['base_url'] = 'http://192.168.1.8:8080/dgc/';
-
 $config['base_url'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}/mich/";
 
+// $config['base_url'] = 'https://senbet.rf.gd';
 
 /*
 |--------------------------------------------------------------------------
